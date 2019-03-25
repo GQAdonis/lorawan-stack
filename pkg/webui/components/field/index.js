@@ -288,13 +288,14 @@ const Err = function (props) {
     error,
     warning,
     name,
+    className,
   } = props
 
   const content = error || warning || ''
 
   const icon = error ? 'error' : 'warning'
 
-  const classname = classnames(style.message, {
+  const classname = classnames(style.message, className, {
     [style.show]: content && content !== '',
     [style.hide]: !content || content === '',
     [style.err]: error,
