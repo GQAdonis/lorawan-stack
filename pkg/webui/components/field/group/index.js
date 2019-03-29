@@ -74,6 +74,7 @@ class FieldGroup extends React.Component {
           setFieldTouched,
           validateOnChange: true,
           horizontal,
+          onChange,
         })
       }
 
