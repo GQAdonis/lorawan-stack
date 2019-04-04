@@ -28,7 +28,6 @@ import (
 func eui64Ptr(eui types.EUI64) *types.EUI64 { return &eui }
 func timePtr(time time.Time) *time.Time     { return &time }
 func TestDownlinkMessage(t *testing.T) {
-	a := assertions.New(t)
 	for _, tc := range []struct {
 		Name                    string
 		NSDownlinkMessage       ttnpb.DownlinkMessage
@@ -101,9 +100,10 @@ func TestDownlinkMessage(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			dnmsg := DownlinkMessage{}
 			dnmsg.FromNSDownlinkMessage(tc.GatewayIDs, tc.NSDownlinkMessage, 0)
-			if !(a.So(dnmsg, should.Resemble, tc.ExpectedDownlinkMessage)) {
+			if !a.So(dnmsg, should.Resemble, tc.ExpectedDownlinkMessage) {
 				t.Fatalf("Invalid DownlinkMessage: %v", dnmsg)
 			}
 		})

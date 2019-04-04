@@ -43,7 +43,6 @@ func TestType(t *testing.T) {
 }
 
 func TestIsProduction(t *testing.T) {
-	a := assertions.New(t)
 	for _, tc := range []struct {
 		Name             string
 		Message          Version
@@ -77,6 +76,7 @@ func TestIsProduction(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			a.So(tc.Message.IsProduction(), should.Equal, tc.ExpectedResponse)
 		})
 	}
@@ -84,7 +84,6 @@ func TestIsProduction(t *testing.T) {
 }
 
 func TestGetRouterConfig(t *testing.T) {
-	a := assertions.New(t)
 	for _, tc := range []struct {
 		Name           string
 		FrequencyPlan  frequencyplans.FrequencyPlan
@@ -196,6 +195,7 @@ func TestGetRouterConfig(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			cfg, err := GetRouterConfig(tc.FrequencyPlan, tc.IsProd)
 			if err != nil {
 				if tc.ErrorAssertion == nil || !a.So(tc.ErrorAssertion(err), should.BeTrue) {
@@ -204,7 +204,7 @@ func TestGetRouterConfig(t *testing.T) {
 			} else if tc.ErrorAssertion != nil {
 				t.Fatalf("Expected error")
 			} else {
-				if !(a.So(cfg, should.Resemble, tc.Cfg)) {
+				if !a.So(cfg, should.Resemble, tc.Cfg) {
 					t.Fatalf("Invalid config: %v", cfg)
 				}
 			}

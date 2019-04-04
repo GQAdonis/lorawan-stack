@@ -32,7 +32,6 @@ type message interface {
 }
 
 func TestMarshalJSON(t *testing.T) {
-	a := assertions.New(t)
 	for _, tc := range []struct {
 		Name     string
 		Message  message
@@ -96,11 +95,12 @@ func TestMarshalJSON(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			msg, err := tc.Message.MarshalJSON()
-			if !(a.So(err, should.Resemble, nil)) {
+			if !a.So(err, should.Resemble, nil) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
-			if !(a.So(msg, should.Resemble, tc.Expected)) {
+			if !a.So(msg, should.Resemble, tc.Expected) {
 				t.Fatalf("Unexpected message: %v", msg)
 			}
 		})
@@ -108,7 +108,6 @@ func TestMarshalJSON(t *testing.T) {
 }
 
 func TestJoinRequest(t *testing.T) {
-	a := assertions.New(t)
 	for _, tc := range []struct {
 		Name                  string
 		JoinRequest           JoinRequest
@@ -229,8 +228,7 @@ func TestJoinRequest(t *testing.T) {
 				},
 				},
 				Settings: ttnpb.TxSettings{
-					Frequency:     868300000,
-					DataRateIndex: 1,
+					Frequency: 868300000,
 					DataRate: ttnpb.DataRate{Modulation: &ttnpb.DataRate_LoRa{LoRa: &ttnpb.LoRaDataRate{
 						SpreadingFactor: 11,
 						Bandwidth:       125000,
@@ -240,6 +238,7 @@ func TestJoinRequest(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			msg, err := tc.JoinRequest.ToUplinkMessage(tc.GatewayIDs, tc.BandID)
 			if err != nil {
 				if tc.ErrorAssertion == nil || !a.So(tc.ErrorAssertion(err), should.BeTrue) {
@@ -255,7 +254,7 @@ func TestJoinRequest(t *testing.T) {
 					t.Fatalf("Invalid RawPayload: %v", msg.RawPayload)
 				}
 				msg.RawPayload = nil
-				if !(a.So(msg, should.Resemble, tc.ExpectedUplinkMessage)) {
+				if !a.So(*msg, should.Resemble, tc.ExpectedUplinkMessage) {
 					t.Fatalf("Invalid UplinkMessage: %s", msg.RawPayload)
 				}
 			}
@@ -264,7 +263,6 @@ func TestJoinRequest(t *testing.T) {
 }
 
 func TestUplinkDataFrame(t *testing.T) {
-	a := assertions.New(t)
 	for _, tc := range []struct {
 		Name                  string
 		UplinkDataFrame       UplinkDataFrame
@@ -334,8 +332,7 @@ func TestUplinkDataFrame(t *testing.T) {
 				},
 				},
 				Settings: ttnpb.TxSettings{
-					Frequency:     868300000,
-					DataRateIndex: 1,
+					Frequency: 868300000,
 					DataRate: ttnpb.DataRate{Modulation: &ttnpb.DataRate_LoRa{LoRa: &ttnpb.LoRaDataRate{
 						SpreadingFactor: 11,
 						Bandwidth:       125000,
@@ -394,8 +391,7 @@ func TestUplinkDataFrame(t *testing.T) {
 				},
 				},
 				Settings: ttnpb.TxSettings{
-					Frequency:     868300000,
-					DataRateIndex: 1,
+					Frequency: 868300000,
 					DataRate: ttnpb.DataRate{Modulation: &ttnpb.DataRate_LoRa{LoRa: &ttnpb.LoRaDataRate{
 						SpreadingFactor: 11,
 						Bandwidth:       125000,
@@ -405,6 +401,7 @@ func TestUplinkDataFrame(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			msg, err := tc.UplinkDataFrame.ToUplinkMessage(tc.GatewayIDs, tc.FrequencyPlanID)
 			if err != nil {
 				if tc.ErrorAssertion == nil || !a.So(tc.ErrorAssertion(err), should.BeTrue) {
@@ -415,7 +412,7 @@ func TestUplinkDataFrame(t *testing.T) {
 			} else {
 				msg.ReceivedAt = time.Time{}
 				msg.RawPayload = nil
-				if !(a.So(msg, should.Resemble, tc.ExpectedUplinkMessage)) {
+				if !a.So(*msg, should.Resemble, tc.ExpectedUplinkMessage) {
 					t.Fatalf("Invalid UplinkMessage: %s", msg.RawPayload)
 				}
 			}
@@ -428,10 +425,10 @@ func TestTxAck(t *testing.T) {
 	correlationIDs := []string{"i3N84kvunPAS8wOmiEKbhsP62wNMRdmn", "deK3h59wUZhR0xb17eumTkauGQxoB5xn"}
 	res := ToTxAcknowledgment(correlationIDs)
 
-	if !(a.So(res, should.Resemble, ttnpb.TxAcknowledgment{
+	if !a.So(res, should.Resemble, ttnpb.TxAcknowledgment{
 		CorrelationIDs: correlationIDs,
 		Result:         ttnpb.TxAcknowledgment_SUCCESS,
-	})) {
+	}) {
 		t.Fatalf("Unexpected TxAck: %v", res)
 	}
 

@@ -65,7 +65,6 @@ func TestAuthentication(t *testing.T) {
 }
 
 func TestDiscover(t *testing.T) {
-	a := assertions.New(t)
 	ctx := log.NewContext(test.Context(), test.GetLogger(t))
 	ctx = newContextWithRightsFetcher(ctx)
 
@@ -99,6 +98,7 @@ func TestDiscover(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("InvalidDiscoveryEndPoint/%d", i), func(t *testing.T) {
+			a := assertions.New(t)
 			_, res, err := websocket.DefaultDialer.Dial(tc.URL, nil)
 			if res.StatusCode != http.StatusNotFound {
 				t.Fatalf("Unexpected response received: %v", res.Status)
@@ -130,6 +130,7 @@ func TestDiscover(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("InvalidQuery/%d", i), func(t *testing.T) {
+			a := assertions.New(t)
 			conn, _, err := websocket.DefaultDialer.Dial(discoveryEndPoint, nil)
 			if !a.So(err, should.BeNil) {
 				t.Fatalf("Connection failed: %v", err)
@@ -147,7 +148,12 @@ func TestDiscover(t *testing.T) {
 			go func() {
 				_, data, err := conn.ReadMessage()
 				if err != nil {
-					t.Fatalf("Failed to read message: %v", err)
+					close(resCh)
+					if err == websocket.ErrBadHandshake {
+						return
+					} else {
+						t.Fatalf("Failed to read message: %v", err)
+					}
 				}
 				resCh <- data
 			}()
@@ -184,6 +190,7 @@ func TestDiscover(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("InvalidQuery/%d", i), func(t *testing.T) {
+			a := assertions.New(t)
 			conn, _, err := websocket.DefaultDialer.Dial(discoveryEndPoint, nil)
 			if !a.So(err, should.BeNil) {
 				t.Fatalf("Connection failed: %v", err)
@@ -197,24 +204,12 @@ func TestDiscover(t *testing.T) {
 				t.Fatalf("Failed to write message: %v", err)
 			}
 
-			resCh := make(chan []byte)
 			go func() {
-				_, data, err := conn.ReadMessage()
+				_, _, err := conn.ReadMessage()
 				if err == nil {
-					t.Logf("Failed to read message: %v", err)
-					t.FailNow()
+					t.Fatalf("Expected connection closure with error but received none")
 				}
-				resCh <- data
 			}()
-			select {
-			case res := <-resCh:
-				if len(res) != 0 {
-					t.Fatal("Expected empty response")
-				}
-			case <-time.After(timeout):
-				t.Log("Read message timeout")
-			}
-			conn.Close()
 		})
 	}
 
@@ -236,6 +231,7 @@ func TestDiscover(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("ValidQuery/%d", i), func(t *testing.T) {
+			a := assertions.New(t)
 			conn, _, err := websocket.DefaultDialer.Dial(discoveryEndPoint, nil)
 			if !a.So(err, should.BeNil) {
 				t.Fatalf("Connection failed: %v", err)
@@ -253,8 +249,12 @@ func TestDiscover(t *testing.T) {
 			go func() {
 				_, data, err := conn.ReadMessage()
 				if err != nil {
-					t.Logf("Failed to read message: %v", err)
-					t.FailNow()
+					close(resCh)
+					if err == websocket.ErrBadHandshake {
+						return
+					} else {
+						t.Fatalf("Failed to read message: %v", err)
+					}
 				}
 				resCh <- data
 			}()
@@ -368,6 +368,7 @@ func TestVersion(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			reqVersion, err := json.Marshal(tc.VersionQuery)
 			if err != nil {
 				panic(err)
@@ -477,8 +478,7 @@ func TestUplink(t *testing.T) {
 					SNR:                9.25,
 				}},
 				Settings: ttnpb.TxSettings{
-					Frequency:     868300000,
-					DataRateIndex: 1,
+					Frequency: 868300000,
 					DataRate: ttnpb.DataRate{Modulation: &ttnpb.DataRate_LoRa{LoRa: &ttnpb.LoRaDataRate{
 						SpreadingFactor: 11,
 						Bandwidth:       125000,
@@ -488,6 +488,7 @@ func TestUplink(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			req, err := json.Marshal(tc.Message)
 			if err != nil {
 				panic(err)
@@ -596,8 +597,7 @@ func TestTraffic(t *testing.T) {
 					SNR:                9.25,
 				}},
 				Settings: ttnpb.TxSettings{
-					Frequency:     868300000,
-					DataRateIndex: 1,
+					Frequency: 868300000,
 					DataRate: ttnpb.DataRate{Modulation: &ttnpb.DataRate_LoRa{LoRa: &ttnpb.LoRaDataRate{
 						SpreadingFactor: 11,
 						Bandwidth:       125000,
@@ -652,8 +652,7 @@ func TestTraffic(t *testing.T) {
 					SNR:                9.25},
 				},
 				Settings: ttnpb.TxSettings{
-					Frequency:     868300000,
-					DataRateIndex: 1,
+					Frequency: 868300000,
 					DataRate: ttnpb.DataRate{Modulation: &ttnpb.DataRate_LoRa{LoRa: &ttnpb.LoRaDataRate{
 						SpreadingFactor: 11,
 						Bandwidth:       125000,
@@ -715,6 +714,7 @@ func TestTraffic(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			if tc.InputBSUpstream != nil {
 				switch v := tc.InputBSUpstream.(type) {
 				case messages.TxConfirmation:

@@ -56,7 +56,7 @@ func TestGetDataRatesFromFrequencyPlan(t *testing.T) {
 			if err != nil && (tc.ErrorAssertion == nil || !a.So(tc.ErrorAssertion(err), should.BeTrue)) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
-			if !(a.So(drs, should.Resemble, tc.DataRates)) {
+			if !a.So(drs, should.Resemble, tc.DataRates) {
 				t.Fatalf("Invalid datarates: %v", drs)
 			}
 		})
@@ -79,7 +79,6 @@ func TestGetUint32IntegerAsByteSlice(t *testing.T) {
 }
 
 func TestGetDataRateFromDataRateIndex(t *testing.T) {
-	a := assertions.New(t)
 	for _, tc := range []struct {
 		Name             string
 		BandID           string
@@ -114,6 +113,7 @@ func TestGetDataRateFromDataRateIndex(t *testing.T) {
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
+			a := assertions.New(t)
 			dr, err := getDataRateFromIndex(tc.BandID, tc.DataRateIndex)
 			if err != nil {
 				if tc.ErrorAssertion == nil || !a.So(tc.ErrorAssertion(err), should.BeTrue) {
@@ -122,7 +122,7 @@ func TestGetDataRateFromDataRateIndex(t *testing.T) {
 			} else if tc.ErrorAssertion != nil {
 				t.Fatalf("Expected error")
 			} else {
-				if !(a.So(dr, should.Resemble, tc.ExpectedDataRate)) {
+				if !a.So(dr, should.Resemble, tc.ExpectedDataRate) {
 					t.Fatalf("Invalid datarate: %v", dr)
 				}
 			}
