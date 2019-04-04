@@ -117,6 +117,10 @@ func (js Js) stylint() (func(args ...string) error, error) {
 	return js.execFromNodeBin("stylint")
 }
 
+func (js Js) storybook() (func(args ...string) error, error) {
+	return js.execFromNodeBin("start-storybook")
+}
+
 // DevDeps installs the javascript development dependencies.
 func (js Js) DevDeps() error {
 	return devDeps()
@@ -284,6 +288,19 @@ func (js Js) LintSnap() error {
 
 func (js Js) LintAll() {
 	mg.Deps(js.Lint, js.LintSnap)
+}
+
+// Storybook runs a local server with storybook.
+func (js Js) Storybook() error {
+	if mg.Verbose() {
+		fmt.Println("Serving storybook…")
+	}
+	storybook, err := js.storybook()
+	if err != nil {
+		return err
+	}
+
+	return storybook("--config-dir", "./config/storybook", "--static-dir", "public", "--port", "9001")
 }
 
 // Vulnerabilities runs yarn audit to check for vulnerable node packages.
