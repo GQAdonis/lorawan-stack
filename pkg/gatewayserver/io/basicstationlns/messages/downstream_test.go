@@ -30,15 +30,14 @@ func timePtr(time time.Time) *time.Time     { return &time }
 func TestDownlinkMessage(t *testing.T) {
 	a := assertions.New(t)
 	for _, tc := range []struct {
-		Name               string
-		NSDownlinkMessage  ttnpb.DownlinkMessage
-		GatewayIDs         ttnpb.GatewayIdentifiers
-		LNSDownlinkMessage DownlinkMessage
-		ExpectedError      error
+		Name                    string
+		NSDownlinkMessage       ttnpb.DownlinkMessage
+		GatewayIDs              ttnpb.GatewayIdentifiers
+		ExpectedDownlinkMessage DownlinkMessage
 	}{
 		{
-			"SampleDownlink",
-			ttnpb.DownlinkMessage{
+			Name: "SampleDownlink",
+			NSDownlinkMessage: ttnpb.DownlinkMessage{
 				RawPayload: []byte("Ymxhamthc25kJ3M=="),
 				EndDeviceIDs: &ttnpb.EndDeviceIdentifiers{
 					DeviceID: "testdevice",
@@ -55,8 +54,8 @@ func TestDownlinkMessage(t *testing.T) {
 					},
 				},
 			},
-			ttnpb.GatewayIdentifiers{GatewayID: "test-gateway"},
-			DownlinkMessage{
+			GatewayIDs: ttnpb.GatewayIdentifiers{GatewayID: "test-gateway"},
+			ExpectedDownlinkMessage: DownlinkMessage{
 				DevEUI:      basicstation.EUI{EUI64: types.EUI64{0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11}},
 				DeviceClass: 0,
 				Pdu:         "Ymxhamthc25kJ3M==",
@@ -67,11 +66,10 @@ func TestDownlinkMessage(t *testing.T) {
 				Priority:    25,
 				XTime:       1554300667,
 			},
-			nil,
 		},
 		{
-			"WithAbsoluteTime",
-			ttnpb.DownlinkMessage{
+			Name: "WithAbsoluteTime",
+			NSDownlinkMessage: ttnpb.DownlinkMessage{
 				RawPayload: []byte("Ymxhamthc25kJ3M=="),
 				EndDeviceIDs: &ttnpb.EndDeviceIdentifiers{
 					DeviceID: "testdevice",
@@ -88,8 +86,8 @@ func TestDownlinkMessage(t *testing.T) {
 					},
 				},
 			},
-			ttnpb.GatewayIdentifiers{GatewayID: "test-gateway"},
-			DownlinkMessage{
+			GatewayIDs: ttnpb.GatewayIdentifiers{GatewayID: "test-gateway"},
+			ExpectedDownlinkMessage: DownlinkMessage{
 				DevEUI:      basicstation.EUI{EUI64: types.EUI64{0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11}},
 				DeviceClass: 1,
 				Pdu:         "Ymxhamthc25kJ3M==",
@@ -100,13 +98,12 @@ func TestDownlinkMessage(t *testing.T) {
 				Priority:    25,
 				GpsTime:     1554300787,
 			},
-			nil,
 		},
 	} {
 		t.Run(tc.Name, func(t *testing.T) {
 			dnmsg := DownlinkMessage{}
 			dnmsg.FromNSDownlinkMessage(tc.GatewayIDs, tc.NSDownlinkMessage, 0)
-			if !(a.So(dnmsg, should.Resemble, tc.LNSDownlinkMessage)) {
+			if !(a.So(dnmsg, should.Resemble, tc.ExpectedDownlinkMessage)) {
 				t.Fatalf("Invalid DownlinkMessage: %v", dnmsg)
 			}
 		})
